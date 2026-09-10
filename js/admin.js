@@ -1,3 +1,24 @@
+
+Claude Desktop (macOS), Conectado
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Admin · JS
 /**
  * Panel privado — acceso de administrador y gestión completa de propiedades.
  *
@@ -11,7 +32,7 @@
 (function () {
   const cfg = window.DAN_CONFIG;
   const db = window.danDb;
-
+ 
   const els = {};
   let SESSION = null;
   let IS_ADMIN = false;
@@ -19,9 +40,9 @@
   let PROPIEDADES = [];
   let MENSAJES = [];
   let fotoState = { file: null, url: null };
-
+ 
   document.addEventListener("DOMContentLoaded", init);
-
+ 
   async function init() {
     cacheEls();
     wireUI();
@@ -34,7 +55,7 @@
     await onSessionChange(data.session);
     db.auth.onAuthStateChange((_event, session) => onSessionChange(session));
   }
-
+ 
   function cacheEls() {
     els.logoutBtn = document.getElementById("logout-btn");
     els.viewLogin = document.getElementById("view-login");
@@ -65,7 +86,7 @@
     els.fotoInput = document.getElementById("foto-input");
     els.coverPreview = document.getElementById("cover-preview");
   }
-
+ 
   function wireUI() {
     els.authForm.addEventListener("submit", onAuthSubmit);
     els.toggleMode.addEventListener("click", () => setMode(MODE === "login" ? "signup" : "login"));
@@ -79,7 +100,7 @@
       els.msgsPanel.hidden = !els.msgsPanel.hidden;
     });
   }
-
+ 
   function setMode(mode) {
     MODE = mode;
     els.authError.hidden = true;
@@ -98,7 +119,7 @@
       els.loginHint.textContent = "";
     }
   }
-
+ 
   async function onSessionChange(session) {
     SESSION = session;
     if (!session) {
@@ -109,6 +130,17 @@
     const { data, error } = await db.rpc("is_admin");
     IS_ADMIN = !error && data === true;
     if (!IS_ADMIN) {
+      // No es admin todavía. Cubre el caso de proyectos que piden confirmar
+      // el correo: ahí no había sesión activa en el momento del registro,
+      // así que el rol nunca se reclamó. Si nadie más lo ha reclamado,
+      // esta primera sesión activa (login luego de confirmar el correo)
+      // lo reclama ahora. claim_admin() es seguro de llamar aunque la
+      // cuenta ya sea admin o aunque ya exista otra: solo tiene efecto la
+      // primera vez que alguien lo consigue.
+      const { data: claimed } = await db.rpc("claim_admin");
+      if (claimed) IS_ADMIN = true;
+    }
+    if (!IS_ADMIN) {
       await db.auth.signOut();
       showLogin();
       showAuthError("Esta cuenta no tiene permisos de administrador.");
@@ -116,13 +148,13 @@
     }
     showDash();
   }
-
+ 
   function showLogin() {
     els.viewLogin.hidden = false;
     els.viewDash.hidden = true;
     els.logoutBtn.hidden = true;
   }
-
+ 
   function showDash() {
     els.viewLogin.hidden = true;
     els.viewDash.hidden = false;
@@ -130,13 +162,13 @@
     cargarPropiedades();
     cargarMensajes();
   }
-
+ 
   function showAuthError(msg) {
     els.authOk.hidden = true;
     els.authError.textContent = msg;
     els.authError.hidden = false;
   }
-
+ 
   async function onAuthSubmit(e) {
     e.preventDefault();
     els.authError.hidden = true;
@@ -144,7 +176,7 @@
     const email = els.authEmail.value.trim();
     const password = els.authPassword.value;
     els.authSubmit.disabled = true;
-
+ 
     if (MODE === "login") {
       const { error } = await db.auth.signInWithPassword({ email, password });
       els.authSubmit.disabled = false;
@@ -152,7 +184,7 @@
       // onSessionChange se encarga del resto (incluida la verificación is_admin)
       return;
     }
-
+ 
     // ---- modo "crear cuenta de administrador" ----
     const { data: exists } = await db.rpc("admin_exists");
     if (exists) {
@@ -168,10 +200,13 @@
     }
     if (!signUpData.session) {
       // El proyecto pide confirmar el correo antes de iniciar sesión.
-      els.authSubmit.disabled = false;
-      els.authOk.textContent = "Cuenta creada. Revisa tu correo para confirmarla y luego inicia sesión.";
-      els.authOk.hidden = false;
+      // Importante: setMode() limpia los mensajes, así que se llama ANTES
+      // de fijar el texto de aviso (si se llama después, el mensaje se
+      // oculta al instante y la persona nunca alcanza a leerlo).
       setMode("login");
+      els.authOk.textContent = "Cuenta creada. Revisa tu correo (" + email + ") y confirma la cuenta. Luego vuelve aquí e inicia sesión con \"Entrar\" — quedarás como administradora automáticamente.";
+      els.authOk.hidden = false;
+      els.authSubmit.disabled = false;
       return;
     }
     const { data: claimed, error: claimError } = await db.rpc("claim_admin");
@@ -183,13 +218,13 @@
     }
     // claim_admin() tuvo éxito: onAuthStateChange ya dispara showDash().
   }
-
+ 
   function traducirErrorSignup(msg) {
     if (/already registered/i.test(msg)) return "Ese correo ya está registrado. Intenta iniciar sesión.";
     if (/password/i.test(msg)) return "La contraseña debe tener al menos 6 caracteres.";
     return "No se pudo crear la cuenta: " + msg;
   }
-
+ 
   // ---------- propiedades ----------
   async function cargarPropiedades() {
     const { data, error } = await db.from("propiedades").select("*").order("creado_en", { ascending: false });
@@ -199,7 +234,7 @@
     els.adminCount.textContent = `${PROPIEDADES.length} propiedad${PROPIEDADES.length === 1 ? "" : "es"} · ${visibles} visible${visibles === 1 ? "" : "s"} en el sitio`;
     renderPropList();
   }
-
+ 
   function renderPropList() {
     if (!PROPIEDADES.length) {
       els.propList.innerHTML = `<p class="badge-note" style="padding:20px 0;">Aún no hay propiedades. Crea la primera con "+ Nueva propiedad".</p>`;
@@ -229,14 +264,14 @@
     els.propList.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => openModal(b.dataset.edit)));
     els.propList.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => eliminarProp(b.dataset.del)));
   }
-
+ 
   async function togglePropiedad(id, campo) {
     const p = PROPIEDADES.find((x) => x.id === id);
     if (!p) return;
     const { error } = await db.from("propiedades").update({ [campo]: !p[campo] }).eq("id", id);
     if (!error) cargarPropiedades();
   }
-
+ 
   async function eliminarProp(id) {
     if (!confirm("¿Eliminar esta propiedad? Esta acción no se puede deshacer.")) return;
     const p = PROPIEDADES.find((x) => x.id === id);
@@ -248,13 +283,13 @@
     }
     cargarPropiedades();
   }
-
+ 
   function urlToStoragePath(url) {
     const marker = `/object/public/${cfg.STORAGE_BUCKET}/`;
     const i = url.indexOf(marker);
     return i === -1 ? null : url.substring(i + marker.length);
   }
-
+ 
   // ---------- modal crear/editar ----------
   function openModal(id) {
     const p = id ? PROPIEDADES.find((x) => x.id === id) : null;
@@ -263,7 +298,7 @@
     els.saveError.hidden = true;
     els.propForm.dataset.id = id || "";
     fotoState = { file: null, url: p ? (p.portada || (p.fotos && p.fotos[0]) || null) : null };
-
+ 
     if (p) {
       els.propForm.titulo.value = p.titulo || "";
       els.propForm.comuna.value = p.comuna || "";
@@ -286,11 +321,11 @@
     renderCoverPreview();
     els.modalBackdrop.hidden = false;
   }
-
+ 
   function closeModal() {
     els.modalBackdrop.hidden = true;
   }
-
+ 
   function renderCoverPreview() {
     if (fotoState.url) {
       els.coverPreview.src = fotoState.url;
@@ -299,7 +334,7 @@
       els.coverPreview.hidden = true;
     }
   }
-
+ 
   function onFotoSelected(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -308,7 +343,7 @@
     reader.onload = () => { fotoState.url = reader.result; renderCoverPreview(); };
     reader.readAsDataURL(file);
   }
-
+ 
   function compressImage(file, maxDim, quality) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -332,18 +367,18 @@
       reader.readAsDataURL(file);
     });
   }
-
+ 
   async function onSaveProp(e) {
     e.preventDefault();
     els.saveError.hidden = true;
     const f = els.propForm;
     const id = f.dataset.id;
-
+ 
     let fotoUrl = fotoState.url && !fotoState.file ? fotoState.url : null;
-
+ 
     els.saveBtn.disabled = true;
     els.saveBtn.textContent = "Guardando…";
-
+ 
     if (fotoState.file) {
       try {
         const compressed = await compressImage(fotoState.file, 1600, 0.82);
@@ -360,9 +395,9 @@
         return;
       }
     }
-
+ 
     const caracteristicas = f.caracteristicas.value.split(",").map((s) => s.trim()).filter(Boolean);
-
+ 
     const payload = {
       titulo: f.titulo.value.trim(),
       comuna: f.comuna.value.trim(),
@@ -384,7 +419,7 @@
       payload.fotos = [fotoUrl];
       payload.portada = fotoUrl;
     }
-
+ 
     if (!payload.titulo || !payload.comuna || payload.precio_uf === null) {
       els.saveBtn.disabled = false;
       els.saveBtn.textContent = "Guardar";
@@ -392,11 +427,11 @@
       els.saveError.hidden = false;
       return;
     }
-
+ 
     const { error } = id
       ? await db.from("propiedades").update(payload).eq("id", id)
       : await db.from("propiedades").insert(payload);
-
+ 
     els.saveBtn.disabled = false;
     els.saveBtn.textContent = "Guardar";
     if (error) {
@@ -407,13 +442,13 @@
     closeModal();
     cargarPropiedades();
   }
-
+ 
   function numOrNull(v) {
     if (v === "" || v === null || v === undefined) return null;
     const n = Number(v);
     return Number.isNaN(n) ? null : n;
   }
-
+ 
   // ---------- mensajes ----------
   async function cargarMensajes() {
     const { data, error } = await db.from("mensajes").select("*").order("creado_en", { ascending: false });
@@ -422,7 +457,7 @@
     els.msgCount.textContent = MENSAJES.filter((m) => !m.leido).length;
     renderMensajes();
   }
-
+ 
   function renderMensajes() {
     if (!MENSAJES.length) {
       els.msgsList.innerHTML = `<p class="badge-note" style="padding:12px 0;">No hay mensajes todavía.</p>`;
@@ -452,8 +487,9 @@
       cargarMensajes();
     }));
   }
-
+ 
   function escapeHTML(s) {
     return (s || "").toString().replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 })();
+ 
