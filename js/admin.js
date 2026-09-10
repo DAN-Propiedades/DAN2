@@ -1,24 +1,3 @@
-
-Claude Desktop (macOS), Conectado
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Admin · JS
 /**
  * Panel privado — acceso de administrador y gestión completa de propiedades.
  *
