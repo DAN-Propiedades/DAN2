@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel privado — DAN Propiedades</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <picture><source srcset="assets/logo-paper.png" media="(prefers-color-scheme: dark)"><img src="assets/logo-ink.png" alt="DAN"></picture>
+      <span class="brand-word">DAN Propiedades</span>
+    </a>
+    <nav class="main-nav" id="main-nav" style="margin-left:auto;">
+      <a href="index.html">&larr; Volver al sitio</a>
+      <button class="btn btn-outline btn-sm" id="logout-btn" hidden>Salir</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= LOGIN / CREAR CUENTA ================= -->
+  <div id="view-login" class="wrap" style="max-width:520px; padding-top:56px; padding-bottom:80px;">
+    <div class="login-hero">
+      <h1 id="login-title">Acceso administrador</h1>
+      <p id="login-desc">Ingresa tu correo y contraseña para gestionar el catálogo de propiedades.</p>
+    </div>
+    <form class="login-form" id="auth-form" novalidate>
+      <div class="form-field">
+        <label for="auth-email">Correo</label>
+        <input type="email" id="auth-email" name="email" required autocomplete="username">
+      </div>
+      <div class="form-field">
+        <label for="auth-password">Contraseña</label>
+        <input type="password" id="auth-password" name="password" required autocomplete="current-password" minlength="6">
+      </div>
+      <button class="btn btn-navy btn-block" type="submit" id="auth-submit">Entrar</button>
+      <div class="form-msg err" id="auth-error" hidden></div>
+      <div class="form-msg ok" id="auth-ok" hidden></div>
+      <div class="login-actions">
+        <button type="button" class="text-link" id="toggle-mode">Crear la cuenta de administrador</button>
+      </div>
+    </form>
+    <p class="badge-note" id="login-hint" style="margin-top:18px;"></p>
+  </div>
+
+  <!-- ================= DASHBOARD ================= -->
+  <div id="view-dash" class="wrap" hidden style="padding-top:40px; padding-bottom:80px;">
+    <div class="admin-head">
+      <div>
+        <h1 style="margin:0;">Panel de propiedades</h1>
+        <p id="admin-count">—</p>
+      </div>
+      <div class="admin-head-actions">
+        <button class="btn btn-accent" id="new-prop-btn"><span class="i" data-icon="plus"></span> Nueva propiedad</button>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <div class="i" data-icon="info"></div>
+      <div>
+        <h4>Cómo usar el panel</h4>
+        <ul>
+          <li>Usa <strong>+ Nueva propiedad</strong> para agregar una publicación al catálogo.</li>
+          <li>El ícono de <strong>ojo</strong> muestra u oculta una propiedad del sitio público.</li>
+          <li>El ícono de <strong>estrella</strong> la destaca en la portada del sitio.</li>
+          <li>El lápiz edita y el tacho elimina la propiedad de forma permanente.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="prop-list" id="prop-list"></div>
+
+    <div style="margin-top:34px;">
+      <button type="button" class="muted-link" id="toggle-msgs" style="border:none; background:none; padding:0; font-family:inherit; cursor:pointer;">Ver mensajes de contacto (<span id="msg-count">0</span>) →</button>
+      <div id="msgs-panel" hidden style="margin-top:18px;">
+        <div class="prop-list" id="msgs-list"></div>
+      </div>
+    </div>
+
+    <p style="margin-top:30px;"><a class="link-arrow" href="index.html">Ver el catálogo público →</a></p>
+  </div>
+
+</main>
+
+<!-- ================= MODAL NUEVA / EDITAR PROPIEDAD ================= -->
+<div class="modal-backdrop" id="modal-backdrop" hidden>
+  <div class="modal">
+    <h2 id="modal-title">Nueva propiedad</h2>
+    <form id="prop-form" novalidate>
+      <div class="form-grid">
+        <div class="form-field span2">
+          <label>Título*</label>
+          <input type="text" name="titulo" required placeholder="Ej: Casa mediterránea con piscina">
+        </div>
+        <div class="form-field">
+          <label>Comuna*</label>
+          <input type="text" name="comuna" required placeholder="Ej: Chicureo">
+        </div>
+        <div class="form-field">
+          <label>Región</label>
+          <select name="region">
+            <option>Arica y Parinacota</option>
+            <option>Tarapacá</option>
+            <option>Antofagasta</option>
+            <option>Atacama</option>
+            <option>Coquimbo</option>
+            <option>Valparaíso</option>
+            <option selected>Región Metropolitana</option>
+            <option>O'Higgins</option>
+            <option>Maule</option>
+            <option>Ñuble</option>
+            <option>Biobío</option>
+            <option>La Araucanía</option>
+            <option>Los Ríos</option>
+            <option>Los Lagos</option>
+            <option>Aysén</option>
+            <option>Magallanes</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Tipo*</label>
+          <select name="tipo" required>
+            <option>Casa</option>
+            <option>Departamento</option>
+            <option>Parcela</option>
+            <option>Oficina</option>
+            <option>Local Comercial</option>
+            <option>Terreno</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Precio (UF)*</label>
+          <input type="number" step="0.01" min="0" name="precio_uf" required>
+        </div>
+        <div class="form-field">
+          <label>Terreno (m²)</label>
+          <input type="number" step="0.1" min="0" name="terreno_m2">
+        </div>
+        <div class="form-field">
+          <label>Construidos (m²)</label>
+          <input type="number" step="0.1" min="0" name="superficie_construida_m2">
+        </div>
+        <div class="form-field">
+          <label>Habitaciones</label>
+          <input type="number" step="1" min="0" name="dormitorios">
+        </div>
+        <div class="form-field">
+          <label>Baños</label>
+          <input type="number" step="1" min="0" name="banos">
+        </div>
+        <div class="form-field">
+          <label>Estacionamientos</label>
+          <input type="number" step="1" min="0" name="estacionamientos">
+        </div>
+        <div class="form-field span2">
+          <label>Descripción</label>
+          <textarea name="descripcion" placeholder="Detalles relevantes: orientación, antigüedad, gastos comunes, etc."></textarea>
+        </div>
+        <div class="form-field span2">
+          <label>Características (separadas por coma)</label>
+          <input type="text" name="caracteristicas" placeholder="Piscina, Quincho, Bodega, Cocina amoblada">
+        </div>
+        <div class="form-field span2">
+          <label>Foto principal</label>
+          <input type="file" name="foto" id="foto-input" accept="image/*">
+          <img class="cover-preview" id="cover-preview" hidden>
+        </div>
+        <div class="form-field">
+          <label class="check-field"><input type="checkbox" name="publicada"> Publicada</label>
+        </div>
+        <div class="form-field">
+          <label class="check-field"><input type="checkbox" name="destacada"> Destacada</label>
+        </div>
+      </div>
+      <div class="form-msg err" id="save-error" hidden></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" id="cancel-modal">Cancelar</button>
+        <button type="submit" class="btn btn-accent" id="save-btn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

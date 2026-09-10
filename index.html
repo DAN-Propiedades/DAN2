@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DAN Propiedades</title>
+<meta name="description" content="Casas, departamentos y terrenos en venta en Chile. Corredores de propiedades con información clara y respuesta rápida por WhatsApp.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" data-nav="inicio">
+      <picture><source srcset="assets/logo-paper.png" media="(prefers-color-scheme: dark)"><img src="assets/logo-ink.png" alt="DAN"></picture>
+      <span class="brand-word">DAN Propiedades</span>
+    </a>
+    <nav class="main-nav" id="main-nav">
+      <a data-nav="inicio">Inicio</a>
+      <a data-nav="propiedades">Propiedades</a>
+      <a data-nav="nosotros">Nosotros</a>
+      <a data-nav="contacto">Contacto</a>
+      <a class="nav-cta" data-wa-generic href="#" target="_blank" rel="noopener"><span class="i" data-icon="chat"></span> WhatsApp</a>
+    </nav>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Abrir menú"><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= INICIO ================= -->
+  <div id="view-inicio">
+    <section class="hero" id="hero-section">
+      <div class="wrap hero-inner">
+        <p class="eyebrow" style="color:#fff;">Corredores de propiedades · Chile</p>
+        <h1>Encuentra la propiedad donde empieza tu próxima etapa</h1>
+        <p class="lede">Casas, departamentos y terrenos seleccionados en todo Chile, con información clara, precios en UF y acompañamiento en cada paso de la compra.</p>
+        <div class="hero-actions">
+          <button class="btn btn-accent" data-nav="propiedades">Ver propiedades</button>
+          <a class="btn btn-outline-invert" data-wa-generic href="#" target="_blank" rel="noopener">Hablar por WhatsApp</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap">
+      <div class="section-head">
+        <div>
+          <h2 style="margin:0;">Propiedades destacadas</h2>
+          <p>Una selección de nuestro catálogo actual.</p>
+        </div>
+        <a class="link-arrow" data-nav="propiedades">Ver todo el catálogo →</a>
+      </div>
+      <div class="grid-cards" id="grid-destacadas"></div>
+    </section>
+
+    <section class="feature-band">
+      <div class="wrap feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon" data-icon="shield"></div>
+          <h3>Información transparente</h3>
+          <p>Cada ficha incluye metros de terreno, construidos y precio en UF, sin letra chica.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" data-icon="handshake"></div>
+          <h3>Asesoría cercana</h3>
+          <p>Te acompañamos desde la primera visita hasta la firma de la escritura.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" data-icon="chat"></div>
+          <h3>Respuesta rápida</h3>
+          <p>Contáctanos por WhatsApp y coordina una visita el mismo día.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= PROPIEDADES (catálogo) ================= -->
+  <div id="view-propiedades" hidden>
+    <section class="wrap" style="padding-bottom:0;">
+      <h1>Propiedades</h1>
+      <p>Filtra por tipo o comuna para encontrar lo que buscas.</p>
+      <div class="filter-bar">
+        <div class="field grow">
+          <label for="f-busca">Buscar</label>
+          <input type="text" id="f-busca" placeholder="Nombre de la propiedad o dirección…">
+        </div>
+        <div class="field">
+          <label for="f-tipo">Tipo</label>
+          <select id="f-tipo"><option value="">Todos</option></select>
+        </div>
+        <div class="field">
+          <label for="f-comuna">Comuna</label>
+          <select id="f-comuna"><option value="">Todas</option></select>
+        </div>
+        <button class="btn-clear" id="f-clear">Limpiar</button>
+      </div>
+    </section>
+    <section class="wrap" style="padding-top:0;">
+      <div class="section-head">
+        <span class="result-count" id="result-count"></span>
+      </div>
+      <div class="grid-cards" id="grid-cards"></div>
+    </section>
+  </div>
+
+  <!-- ================= FICHA DE PROPIEDAD ================= -->
+  <div id="view-detalle" class="wrap" hidden style="padding: 40px 24px 80px;"></div>
+
+  <!-- ================= NOSOTROS ================= -->
+  <div id="view-nosotros" hidden>
+    <section class="wrap">
+      <h1>Quiénes somos</h1>
+      <p>DAN Propiedades es una corredora chilena dedicada a la venta de casas, departamentos y terrenos. Trabajamos con pocas propiedades a la vez para conocerlas de verdad y poder recomendar con honestidad.</p>
+      <div class="mv-grid">
+        <div class="mv-card dark">
+          <div class="mv-icon" data-icon="compass"></div>
+          <h3>Nuestra visión</h3>
+          <p>Ser la corredora de propiedades más confiable de Chile, reconocida por transformar una decisión compleja en una experiencia clara, humana y segura para cada familia.</p>
+        </div>
+        <div class="mv-card light">
+          <div class="mv-icon" data-icon="target"></div>
+          <h3>Nuestra misión</h3>
+          <p>Conectar a las personas con la propiedad correcta, entregando información completa y verificada, acompañamiento profesional en la negociación y total transparencia en cada etapa del proceso de compra.</p>
+        </div>
+      </div>
+      <h3 style="margin-bottom:16px;">Nuestros valores</h3>
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="mv-icon" data-icon="heart"></div>
+          <h4>Transparencia</h4>
+          <p>Datos reales de superficie, precio y condiciones desde el primer día.</p>
+        </div>
+        <div class="value-card">
+          <div class="mv-icon" data-icon="heart"></div>
+          <h4>Cercanía</h4>
+          <p>Atención directa, sin call centers ni respuestas automáticas.</p>
+        </div>
+        <div class="value-card">
+          <div class="mv-icon" data-icon="heart"></div>
+          <h4>Compromiso</h4>
+          <p>Acompañamos hasta la firma y también después de ella.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= CONTACTO ================= -->
+  <div id="view-contacto" hidden>
+    <section class="wrap">
+      <h1>Conversemos</h1>
+      <p>Déjanos tu mensaje y te responderemos a la brevedad, o escríbenos directo por WhatsApp.</p>
+      <div class="contact-grid">
+        <div class="contact-form-card">
+          <form id="contact-form" novalidate>
+            <div class="form-field">
+              <label for="nombre">Nombre</label>
+              <input type="text" id="nombre" name="nombre" required>
+            </div>
+            <div class="form-row2">
+              <div class="form-field">
+                <label for="correo">Correo</label>
+                <input type="email" id="correo" name="correo">
+              </div>
+              <div class="form-field">
+                <label for="telefono">Teléfono (opcional)</label>
+                <input type="tel" id="telefono" name="telefono" placeholder="+56 9 ...">
+              </div>
+            </div>
+            <div class="form-field">
+              <label for="mensaje">Mensaje</label>
+              <textarea id="mensaje" name="mensaje" required placeholder="Cuéntanos qué propiedad buscas o qué te interesa consultar"></textarea>
+            </div>
+            <button class="btn btn-navy" type="submit">Enviar mensaje</button>
+            <div class="form-msg" id="contact-msg" hidden></div>
+          </form>
+        </div>
+        <div>
+          <a class="btn btn-accent btn-block" data-wa-generic href="#" target="_blank" rel="noopener"><span class="i" data-icon="chat"></span> Escribir por WhatsApp</a>
+          <div class="contact-info-card">
+            <a class="contact-info-row" data-tel href="#"><span class="i" data-icon="phone"></span><span class="contact-tel-text"></span></a>
+            <a class="contact-info-row" data-correo href="#"><span class="i" data-icon="mail"></span><span class="contact-correo-text"></span></a>
+            <div class="contact-info-row"><span class="i" data-icon="pin"></span><span>Santiago, Chile</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <a class="footer-brand-row" data-nav="inicio">
+        <picture><source srcset="assets/logo-paper.png" media="(prefers-color-scheme: dark)"><img src="assets/logo-ink.png" alt="DAN"></picture>
+        <span>DAN Propiedades</span>
+      </a>
+      <p style="font-size:.9rem;">Corredores de propiedades. Venta de casas, departamentos y terrenos con asesoría cercana y transparente.</p>
+    </div>
+    <div>
+      <h5>Contacto</h5>
+      <div class="footer-contact-row"><span class="i" data-icon="phone"></span><span class="contact-tel-text"></span></div>
+      <div class="footer-contact-row"><span class="i" data-icon="mail"></span><span class="contact-correo-text"></span></div>
+      <div class="footer-contact-row"><span class="i" data-icon="pin"></span><span>Santiago, Chile</span></div>
+    </div>
+    <div>
+      <h5>Navegación</h5>
+      <ul class="footer-links">
+        <li><a data-nav="inicio">Inicio</a></li>
+        <li><a data-nav="propiedades">Propiedades</a></li>
+        <li><a data-nav="nosotros">Nosotros</a></li>
+        <li><a data-nav="contacto">Contacto</a></li>
+        <li><a id="admin-link" href="admin.html">Administrar</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">© <span id="year"></span> DAN Propiedades — Corredores de Propiedades.</div>
+</footer>
+
+<a class="wa-float" id="wa-float" href="#" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp"><span class="i" data-icon="chat"></span></a>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabaseClient.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/site.js"></script>
+</body>
+</html>
