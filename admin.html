@@ -167,9 +167,13 @@
           <input type="text" name="caracteristicas" placeholder="Piscina, Quincho, Bodega, Cocina amoblada">
         </div>
         <div class="form-field span2">
-          <label>Foto principal</label>
-          <input type="file" name="foto" id="foto-input" accept="image/*">
-          <img class="cover-preview" id="cover-preview" hidden>
+          <label>Fotos (hasta 5 — la primera es la portada)</label>
+          <input type="file" name="fotos" id="foto-input" accept="image/*" multiple>
+          <div class="photo-grid" id="photo-grid"></div>
+        </div>
+        <div class="form-field span2">
+          <label>Video de YouTube (opcional)</label>
+          <input type="url" name="video_url" placeholder="https://www.youtube.com/watch?v=...">
         </div>
         <div class="form-field">
           <label class="check-field"><input type="checkbox" name="publicada"> Publicada</label>
