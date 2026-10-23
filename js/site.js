@@ -270,10 +270,34 @@
         location.hash = "#/" + el.dataset.nav;
       })
     );
+    wireGallery(els.views.detalle);
+  }
+
+  function wireGallery(root) {
+    const main = root.querySelector("#detail-main-img");
+    if (!main) return;
+    root.querySelectorAll("[data-gallery-img]").forEach((btn) =>
+      btn.addEventListener("click", () => {
+        main.src = btn.dataset.galleryImg;
+        root.querySelectorAll("[data-gallery-img]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      })
+    );
   }
 
   function detailHTML(p) {
-    const foto = p.portada || (p.fotos && p.fotos[0]) || placeholderFor(p.tipo);
+    const fotos = Array.isArray(p.fotos) && p.fotos.length ? p.fotos : p.portada ? [p.portada] : [];
+    const foto = fotos[0] || placeholderFor(p.tipo);
+    const galeriaHTML = fotos.length > 1
+      ? `<div class="gallery-thumbs">${fotos
+          .map(
+            (url, i) => `<button type="button" class="gallery-thumb${i === 0 ? " active" : ""}" data-gallery-img="${escapeHTML(url)}">
+              <img src="${url}" alt="Foto ${i + 1} de ${escapeHTML(p.titulo)}">
+            </button>`
+          )
+          .join("")}</div>`
+      : "";
+    const videoBtn = p.video_url ? `<a class="btn btn-outline" href="${escapeHTML(p.video_url)}" target="_blank" rel="noopener">${icon("play")} Ver video</a>` : "";
     const msg = `Hola, me interesa la propiedad "${p.titulo}" (${p.comuna}). ¿Podrían darme más información?`;
     const specs = [
       p.terreno_m2 != null ? { val: fmtNum(p.terreno_m2), lab: "m² terreno" } : null,
@@ -286,7 +310,10 @@
     return `
     <a class="detail-back" data-nav="propiedades">&larr; Volver al catálogo</a>
     <div class="detail-grid">
-      <div><div class="gallery-main"><img src="${foto}" alt="${escapeHTML(p.titulo)}"></div></div>
+      <div>
+        <div class="gallery-main"><img id="detail-main-img" src="${foto}" alt="${escapeHTML(p.titulo)}"></div>
+        ${galeriaHTML}
+      </div>
       <div>
         <span class="card-tag" style="position:static; display:inline-block; margin-bottom:10px;">${escapeHTML((p.tipo || "").toUpperCase())}</span>
         <div class="detail-title-row">
@@ -305,6 +332,7 @@
         <div class="detail-actions">
           <a class="btn btn-accent" href="${waLink(msg)}" target="_blank" rel="noopener">${icon("chat")} Consultar por WhatsApp</a>
           <a class="btn btn-outline" href="mailto:${cfg.CORREO_CONTACTO}?subject=${encodeURIComponent("Consulta: " + p.titulo)}">${icon("mail")} Escribir por correo</a>
+          ${videoBtn}
         </div>
       </div>
     </div>`;

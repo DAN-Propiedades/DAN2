@@ -18,7 +18,8 @@
   let MODE = "login"; // "login" | "signup"
   let PROPIEDADES = [];
   let MENSAJES = [];
-  let fotoState = { file: null, url: null };
+  const MAX_FOTOS = 5;
+  let fotos = []; // [{ key, url, file }] — orden = orden de la galería; fotos[0] es la portada
  
   document.addEventListener("DOMContentLoaded", init);
  
@@ -63,7 +64,7 @@
     els.saveError = document.getElementById("save-error");
     els.saveBtn = document.getElementById("save-btn");
     els.fotoInput = document.getElementById("foto-input");
-    els.coverPreview = document.getElementById("cover-preview");
+    els.photoGrid = document.getElementById("photo-grid");
   }
  
   function wireUI() {
@@ -276,8 +277,10 @@
     els.propForm.reset();
     els.saveError.hidden = true;
     els.propForm.dataset.id = id || "";
-    fotoState = { file: null, url: p ? (p.portada || (p.fotos && p.fotos[0]) || null) : null };
- 
+
+    const fotosExistentes = p ? (p.fotos && p.fotos.length ? p.fotos : (p.portada ? [p.portada] : [])) : [];
+    fotos = fotosExistentes.map((url, i) => ({ key: "ex-" + i + "-" + url, url, file: null }));
+
     if (p) {
       els.propForm.titulo.value = p.titulo || "";
       els.propForm.comuna.value = p.comuna || "";
@@ -291,36 +294,76 @@
       els.propForm.estacionamientos.value = p.estacionamientos ?? "";
       els.propForm.descripcion.value = p.descripcion || "";
       els.propForm.caracteristicas.value = (p.caracteristicas || []).join(", ");
+      els.propForm.video_url.value = p.video_url || "";
       els.propForm.publicada.checked = !!p.publicada;
       els.propForm.destacada.checked = !!p.destacada;
     } else {
+      els.propForm.video_url.value = "";
       els.propForm.publicada.checked = true;
       els.propForm.destacada.checked = false;
     }
-    renderCoverPreview();
+    renderPhotoGrid();
     els.modalBackdrop.hidden = false;
   }
- 
+
   function closeModal() {
     els.modalBackdrop.hidden = true;
   }
- 
-  function renderCoverPreview() {
-    if (fotoState.url) {
-      els.coverPreview.src = fotoState.url;
-      els.coverPreview.hidden = false;
-    } else {
-      els.coverPreview.hidden = true;
+
+  function renderPhotoGrid() {
+    if (!els.photoGrid) return;
+    if (!fotos.length) {
+      els.photoGrid.innerHTML = '<p class="badge-note" style="margin:6px 0 0;">Aún no agregas fotos. Puedes subir hasta 5.</p>';
+      return;
     }
+    els.photoGrid.innerHTML = fotos.map((f, i) => `
+      <div class="photo-thumb${i === 0 ? " is-cover" : ""}" data-key="${f.key}">
+        ${f.url ? `<img src="${f.url}" alt="">` : '<div class="photo-thumb-loading"></div>'}
+        ${i === 0 ? '<span class="photo-cover-tag">Portada</span>' : ""}
+        <div class="photo-thumb-actions">
+          ${i !== 0 ? `<button type="button" class="photo-thumb-btn" data-make-cover="${f.key}" title="Usar como portada">&#9733;</button>` : ""}
+          <button type="button" class="photo-thumb-btn danger" data-remove-photo="${f.key}" title="Quitar">&#10005;</button>
+        </div>
+      </div>`).join("");
+    els.photoGrid.querySelectorAll("[data-remove-photo]").forEach((b) =>
+      b.addEventListener("click", () => {
+        fotos = fotos.filter((f) => f.key !== b.dataset.removePhoto);
+        renderPhotoGrid();
+      })
+    );
+    els.photoGrid.querySelectorAll("[data-make-cover]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const i = fotos.findIndex((f) => f.key === b.dataset.makeCover);
+        if (i > 0) {
+          const [item] = fotos.splice(i, 1);
+          fotos.unshift(item);
+          renderPhotoGrid();
+        }
+      })
+    );
   }
- 
+
   function onFotoSelected(e) {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    fotoState.file = file;
-    const reader = new FileReader();
-    reader.onload = () => { fotoState.url = reader.result; renderCoverPreview(); };
-    reader.readAsDataURL(file);
+    const files = Array.from(e.target.files || []);
+    e.target.value = ""; // permite volver a elegir el mismo archivo más adelante
+    if (!files.length) return;
+    const espacio = MAX_FOTOS - fotos.length;
+    if (espacio <= 0) {
+      alert(`Ya tienes el máximo de ${MAX_FOTOS} fotos. Quita alguna antes de agregar más.`);
+      return;
+    }
+    const aAgregar = files.slice(0, espacio);
+    if (files.length > aAgregar.length) {
+      alert(`Solo se agregaron ${aAgregar.length} foto(s): el máximo es ${MAX_FOTOS} por propiedad.`);
+    }
+    aAgregar.forEach((file) => {
+      const item = { key: "new-" + Date.now() + "-" + Math.random().toString(36).slice(2, 7), url: null, file };
+      fotos.push(item);
+      const reader = new FileReader();
+      reader.onload = () => { item.url = reader.result; renderPhotoGrid(); };
+      reader.readAsDataURL(file);
+    });
+    renderPhotoGrid();
   }
  
   function compressImage(file, maxDim, quality) {
@@ -352,31 +395,34 @@
     els.saveError.hidden = true;
     const f = els.propForm;
     const id = f.dataset.id;
- 
-    let fotoUrl = fotoState.url && !fotoState.file ? fotoState.url : null;
- 
+
     els.saveBtn.disabled = true;
     els.saveBtn.textContent = "Guardando…";
- 
-    if (fotoState.file) {
-      try {
-        const compressed = await compressImage(fotoState.file, 1600, 0.82);
-        const path = `propiedades/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
-        const { error: upErr } = await db.storage.from(cfg.STORAGE_BUCKET).upload(path, compressed, { contentType: "image/jpeg", upsert: false });
-        if (upErr) throw upErr;
-        const { data } = db.storage.from(cfg.STORAGE_BUCKET).getPublicUrl(path);
-        fotoUrl = data.publicUrl;
-      } catch (err) {
-        els.saveBtn.disabled = false;
-        els.saveBtn.textContent = "Guardar";
-        els.saveError.textContent = "No se pudo subir la foto: " + (err.message || err);
-        els.saveError.hidden = false;
-        return;
+
+    const fotosUrls = [];
+    try {
+      for (const item of fotos) {
+        if (item.file) {
+          const compressed = await compressImage(item.file, 1600, 0.82);
+          const path = `propiedades/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
+          const { error: upErr } = await db.storage.from(cfg.STORAGE_BUCKET).upload(path, compressed, { contentType: "image/jpeg", upsert: false });
+          if (upErr) throw upErr;
+          const { data } = db.storage.from(cfg.STORAGE_BUCKET).getPublicUrl(path);
+          fotosUrls.push(data.publicUrl);
+        } else if (item.url) {
+          fotosUrls.push(item.url);
+        }
       }
+    } catch (err) {
+      els.saveBtn.disabled = false;
+      els.saveBtn.textContent = "Guardar";
+      els.saveError.textContent = "No se pudo subir una foto: " + (err.message || err);
+      els.saveError.hidden = false;
+      return;
     }
- 
+
     const caracteristicas = f.caracteristicas.value.split(",").map((s) => s.trim()).filter(Boolean);
- 
+
     const payload = {
       titulo: f.titulo.value.trim(),
       comuna: f.comuna.value.trim(),
@@ -390,15 +436,14 @@
       estacionamientos: numOrNull(f.estacionamientos.value),
       descripcion: f.descripcion.value.trim(),
       caracteristicas,
+      video_url: f.video_url.value.trim() || null,
       publicada: f.publicada.checked,
       destacada: f.destacada.checked,
       actualizado_en: new Date().toISOString(),
+      fotos: fotosUrls,
+      portada: fotosUrls[0] || null,
     };
-    if (fotoUrl) {
-      payload.fotos = [fotoUrl];
-      payload.portada = fotoUrl;
-    }
- 
+
     if (!payload.titulo || !payload.comuna || payload.precio_uf === null) {
       els.saveBtn.disabled = false;
       els.saveBtn.textContent = "Guardar";
