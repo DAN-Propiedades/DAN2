@@ -190,6 +190,14 @@ nav.main-nav a:hover, nav.main-nav a.active{ color: var(--ink); }
   font-size:.68rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
   padding: 5px 11px; border-radius: 100px;
 }
+.card-tag-op{
+  position:absolute; top:12px; right:12px; color:#fff;
+  font-size:.68rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  padding: 5px 11px; border-radius: 100px;
+}
+.card-tag-op.op-venta{ background: var(--navy); }
+.card-tag-op.op-arriendo{ background: var(--accent-strong); }
+.card-tag-op.op-arriendo-temporal{ background: #6B5B95; }
 .card-body{ padding: 18px 20px 20px; display:flex; flex-direction:column; gap:6px; flex:1; }
 .card-loc{ display:flex; align-items:center; gap:5px; font-size:.85rem; color: var(--ink-faint); }
 .card-body h3{ font-size: 1.1rem; margin:2px 0 0; }
