@@ -50,6 +50,7 @@
     els.gridDestacadas = document.getElementById("grid-destacadas");
     els.grid = document.getElementById("grid-cards");
     els.count = document.getElementById("result-count");
+    els.fOperacion = document.getElementById("f-operacion");
     els.fTipo = document.getElementById("f-tipo");
     els.fComuna = document.getElementById("f-comuna");
     els.fBusca = document.getElementById("f-busca");
@@ -128,17 +129,20 @@
   }
 
   function poblarFiltros() {
+    const operaciones = ["Venta", "Arriendo", "Arriendo Temporal"];
     const tipos = [...new Set(TODAS.map((p) => p.tipo).filter(Boolean))].sort();
     const comunas = [...new Set(TODAS.map((p) => p.comuna).filter(Boolean))].sort();
+    if (els.fOperacion) els.fOperacion.innerHTML = '<option value="">Todas</option>' + operaciones.map((o) => `<option value="${o}">${o}</option>`).join("");
     if (els.fTipo) els.fTipo.innerHTML = '<option value="">Todos</option>' + tipos.map((t) => `<option value="${t}">${t}</option>`).join("");
     if (els.fComuna) els.fComuna.innerHTML = '<option value="">Todas</option>' + comunas.map((c) => `<option value="${c}">${c}</option>`).join("");
   }
 
   function wireFilters() {
-    [els.fTipo, els.fComuna].forEach((el) => el && el.addEventListener("change", aplicarFiltros));
+    [els.fOperacion, els.fTipo, els.fComuna].forEach((el) => el && el.addEventListener("change", aplicarFiltros));
     if (els.fBusca) els.fBusca.addEventListener("input", debounce(aplicarFiltros, 180));
     if (els.fClear)
       els.fClear.addEventListener("click", () => {
+        if (els.fOperacion) els.fOperacion.value = "";
         if (els.fTipo) els.fTipo.value = "";
         if (els.fComuna) els.fComuna.value = "";
         if (els.fBusca) els.fBusca.value = "";
@@ -147,11 +151,13 @@
   }
 
   function aplicarFiltros() {
+    const operacion = els.fOperacion ? els.fOperacion.value : "";
     const tipo = els.fTipo ? els.fTipo.value : "";
     const comuna = els.fComuna ? els.fComuna.value : "";
     const q = els.fBusca ? els.fBusca.value.trim().toLowerCase() : "";
     renderGrid(
       TODAS.filter((p) => {
+        if (operacion && (p.operacion || "Venta") !== operacion) return false;
         if (tipo && p.tipo !== tipo) return false;
         if (comuna && p.comuna !== comuna) return false;
         if (q && !(p.titulo || "").toLowerCase().includes(q) && !(p.direccion || "").toLowerCase().includes(q)) return false;
@@ -206,14 +212,20 @@
     return [p.comuna, p.region].filter(Boolean).join(", ");
   }
 
+  function operacionSlug(op) {
+    return (op || "Venta").toLowerCase().replace(/\s+/g, "-");
+  }
+
   function cardHTML(p) {
     const foto = p.portada || (p.fotos && p.fotos[0]) || placeholderFor(p.tipo);
+    const operacion = p.operacion || "Venta";
     return `
     <a class="card-link" data-detail="${p.id}">
       <article class="card">
         <div class="card-media">
           <img src="${foto}" alt="${escapeHTML(p.titulo)}" loading="lazy">
           <span class="card-tag">${escapeHTML((p.tipo || "").toUpperCase())}</span>
+          <span class="card-tag-op op-${operacionSlug(operacion)}">${escapeHTML(operacion.toUpperCase())}</span>
         </div>
         <div class="card-body">
           <div class="card-loc">${icon("pin")} ${escapeHTML(ubicacionTexto(p))}</div>
@@ -298,7 +310,8 @@
           .join("")}</div>`
       : "";
     const videoBtn = p.video_url ? `<a class="btn btn-outline" href="${escapeHTML(p.video_url)}" target="_blank" rel="noopener">${icon("play")} Ver video</a>` : "";
-    const msg = `Hola, me interesa la propiedad "${p.titulo}" (${p.comuna}). ¿Podrían darme más información?`;
+    const operacion = p.operacion || "Venta";
+    const msg = `Hola, me interesa la propiedad "${p.titulo}" (${p.comuna}) — ${operacion}. ¿Podrían darme más información?`;
     const specs = [
       p.terreno_m2 != null ? { val: fmtNum(p.terreno_m2), lab: "m² terreno" } : null,
       p.superficie_construida_m2 != null ? { val: fmtNum(p.superficie_construida_m2), lab: "m² construidos" } : null,
@@ -316,6 +329,7 @@
       </div>
       <div>
         <span class="card-tag" style="position:static; display:inline-block; margin-bottom:10px;">${escapeHTML((p.tipo || "").toUpperCase())}</span>
+        <span class="card-tag-op op-${operacionSlug(operacion)}" style="position:static; display:inline-block; margin-bottom:10px; margin-left:8px;">${escapeHTML(operacion.toUpperCase())}</span>
         <div class="detail-title-row">
           <h1 style="margin:0;">${escapeHTML(p.titulo)}</h1>
           <div class="detail-price-tag">${fmtUF(p.precio_uf)}</div>
